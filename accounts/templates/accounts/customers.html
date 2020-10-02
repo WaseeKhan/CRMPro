@@ -52,6 +52,7 @@
                     <th>Products</th>
                     <th>Category</th>
                     <th>Ordered date</th>
+                    <th>Comment</th>
                     <th>Status</th>
                     <th>Update</th>
                     <th>Delete</th>
@@ -61,6 +62,7 @@
                     <td>{{order.product}}</td>
                     <td>{{order.product.category}}</td>
                     <td>{{order.created_date}}</td>
+                    <td>{{order.comment}}</td>
                     <td>{{order.status}}</td>
                     <td><a href="{% url 'update_order' order.id%}">Update</a></td>
                     <td><a href="{% url 'delete_order' order.id %}">Delete</a></td>

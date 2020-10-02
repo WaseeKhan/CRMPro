@@ -1,14 +1,17 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.forms import inlineformset_factory
+from .form import OrderForm, CreateUserForm
+from django.contrib import messages
 from .models import *
-from .form import OrderForm
+from django.contrib.auth.forms import UserCreationForm
 from .filters import OrderFilter
-
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
-
+@login_required(login_url='login')
 def home(request):
     orders = Order.objects.all()
     customers = Customer.objects.all()
@@ -26,12 +29,53 @@ def home(request):
     return render(request, 'accounts/dashboard.html', context)
 
 
+def registerHere(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    else:
+        form = CreateUserForm()
+        if request.method == 'POST':
+            form = CreateUserForm(request.POST)
+            # print(request.POST)
+            if form.is_valid():
+                form.save()
+                user = form.cleaned_data.get('username')
+                messages.success(request, 'Congratulations!! Account Created: ' + user + ' Please Login.')
+                # print(messages.success(request, 'Account Created successfully for ' + user))
+                return redirect('login')
+        context = {'form': form}
+        return render(request, 'accounts/register.html', context)
+
+
+def loginHere(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    else:
+        if request.method == 'POST':
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                print(request, user)
+                return redirect('home')
+            else:
+                messages.info(request, 'username or password is incorrect.')
+        context = {}
+        return render(request, 'accounts/login.html', context)
+
+
+def logoutHere(request):
+    logout(request)
+    return redirect('login')
+
+@login_required(login_url='login')
 def products(request):
     products = Product.objects.all()
     context = {'products': products}
     return render(request, 'accounts/products.html', context)
 
-
+@login_required(login_url='login')
 def customers(request, pk):
     customers = Customer.objects.get(id=pk)
     orders = customers.order_set.all()
@@ -40,17 +84,17 @@ def customers(request, pk):
     myFilter = OrderFilter(request.GET, queryset=orders)
     orders = myFilter.qs
 
-    context = {'customers': customers, 'orders': orders, 'order_count': order_count,'myFilter':myFilter}
+    context = {'customers': customers, 'orders': orders, 'order_count': order_count, 'myFilter': myFilter}
     return render(request, 'accounts/customers.html', context)
 
-
+@login_required(login_url='login')
 def createOrder(request, pk):
     OrderFormSet = inlineformset_factory(Customer, Order, fields=('product', 'status'))
     customer = Customer.objects.get(id=pk)
     formset = OrderFormSet(instance=customer)
     # form = OrderForm(initial={'customer':customer})
     if request.method == 'POST':
-        #form = OrderForm(request.POST)
+        # form = OrderForm(request.POST)
         formset = OrderFormSet(request.POST, instance=customer)
         if formset.is_valid():
             formset.save()
@@ -59,7 +103,7 @@ def createOrder(request, pk):
     context = {'formset': formset}
     return render(request, 'accounts/order_form.html', context)
 
-
+@login_required(login_url='login')
 def updateOrder(request, pk):
     order = Order.objects.get(id=pk)
     form = OrderForm(instance=order)
@@ -71,7 +115,7 @@ def updateOrder(request, pk):
     context = {'form': form}
     return render(request, 'accounts/order_form.html', context)
 
-
+@login_required(login_url='login')
 def deleteOrder(request, pk):
     order = Order.objects.get(id=pk)
     if request.method == 'POST':

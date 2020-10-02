@@ -1,4 +1,16 @@
 {% load static %}
+
+<style>
+  #welcome-msg{
+  font-size: 15px;
+  color:white;
+  margin-right:10px;
+  }
+  #logout-msg{
+  font-size: 15px;
+  margin-right:10px;
+  }
+</style>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="width:100%;">
   <img src="{% static 'images/logo.png'%}" style="height:45px; ">
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -14,7 +26,10 @@
         <a class="nav-link" href="{% url 'products' %}">Products</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Customers</a>
+        <a class="nav-link" href="{% url 'login' %}">Login</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'register' %}">Register</a>
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -28,6 +43,8 @@
         </div>
       </li>
     </ul>
+    <span id="welcome-msg"> Welcome, {{request.user}} </span>
+    <span id="logout-msg"><a href="{% url 'logout' %}"> Logout </a></span>
     <form class="form-inline my-2 my-lg-0">
       <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
